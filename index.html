@@ -724,28 +724,35 @@
     }
     .btn-p:hover::after { transform: translateX(100%); }
 
-    /* Card hover — glow border via box-shadow, dark bg stays */
+    /* Card gradient background on hover + white text */
     .card-item, .step, .test-card {
       position: relative;
       transform-style: preserve-3d;
       will-change: transform;
     }
-    .card-item:hover {
-      border-color: transparent;
-      box-shadow:
-        0 0 0 1.5px rgba(124,58,237,.7),
-        0 0 0 3px rgba(6,182,212,.25),
-        0 16px 48px rgba(124,58,237,.22);
-      background: rgba(18,12,40,.92);
+    .card-item::before, .test-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: inherit;
+      background: var(--grad);
+      opacity: 0;
+      z-index: 0;
+      transition: opacity .35s ease;
     }
-    .test-card:hover {
-      border-color: transparent;
-      box-shadow:
-        0 0 0 1.5px rgba(124,58,237,.6),
-        0 0 0 3px rgba(6,182,212,.2),
-        0 12px 36px rgba(124,58,237,.18);
-      background: rgba(18,12,40,.92);
+    .card-item > *, .test-card > * { position: relative; z-index: 1; }
+    .card-item:hover::before, .test-card:hover::before { opacity: 1; }
+
+    /* Text readable on gradient */
+    .card-item:hover .card-txt,
+    .card-item:hover .card-res,
+    .card-item:hover .card-ttl {
+      color: rgba(255,255,255,.95) !important;
     }
+    .card-item:hover .card-res { color: rgba(255,255,255,.85) !important; }
+    .test-card:hover .test-txt,
+    .test-card:hover .test-name,
+    .test-card:hover .test-meta,
+    .test-card:hover .test-q { color: rgba(255,255,255,.95) !important; }
 
     /* Section h2 underline */
     .s-head h2::after {
