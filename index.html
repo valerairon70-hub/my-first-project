@@ -724,24 +724,27 @@
     }
     .btn-p:hover::after { transform: translateX(100%); }
 
-    /* Card gradient border on hover */
+    /* Card hover — glow border via box-shadow, dark bg stays */
     .card-item, .step, .test-card {
       position: relative;
       transform-style: preserve-3d;
       will-change: transform;
     }
-    .card-item::before, .test-card::before {
-      content: '';
-      position: absolute; inset: -1px;
-      border-radius: inherit;
-      background: var(--grad);
-      opacity: 0;
-      z-index: -1;
-      transition: opacity .35s ease;
+    .card-item:hover {
+      border-color: transparent;
+      box-shadow:
+        0 0 0 1.5px rgba(124,58,237,.7),
+        0 0 0 3px rgba(6,182,212,.25),
+        0 16px 48px rgba(124,58,237,.22);
+      background: rgba(18,12,40,.92);
     }
-    .card-item:hover::before, .test-card:hover::before { opacity: 1; }
-    .card-item:hover, .test-card:hover {
-      background: rgba(8,8,23,.98);
+    .test-card:hover {
+      border-color: transparent;
+      box-shadow:
+        0 0 0 1.5px rgba(124,58,237,.6),
+        0 0 0 3px rgba(6,182,212,.2),
+        0 12px 36px rgba(124,58,237,.18);
+      background: rgba(18,12,40,.92);
     }
 
     /* Section h2 underline */
