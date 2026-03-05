@@ -48,10 +48,17 @@
     section { padding: 96px 0; }
 
     .grad-text {
-      background: var(--grad);
+      background: linear-gradient(135deg, #7C3AED, #06B6D4, #a855f7, #22d3ee, #7C3AED);
+      background-size: 300% 300%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      animation: grad-anim 5s ease infinite;
+    }
+    @keyframes grad-anim {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
     /* ===========================
@@ -659,6 +666,166 @@
       0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)}
       40%{transform:translateX(7px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
     }
+
+    /* ===========================
+       WOW EFFECTS — EXTRA
+    =========================== */
+
+    /* Hero floating orbs */
+    .hero-orb {
+      position: absolute; border-radius: 50%;
+      pointer-events: none; filter: blur(90px); will-change: transform;
+    }
+    .orb-1 {
+      width: 560px; height: 560px;
+      background: radial-gradient(circle, rgba(124,58,237,.18), transparent 70%);
+      top: -160px; right: -120px;
+    }
+    .orb-2 {
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, rgba(6,182,212,.12), transparent 70%);
+      bottom: -80px; left: -80px;
+    }
+    .orb-3 {
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(168,85,247,.14), transparent 70%);
+      top: 35%; right: 22%;
+      animation: float 9s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0) scale(1); }
+      50%      { transform: translateY(-28px) scale(1.06); }
+    }
+
+    /* Reveal variants */
+    .reveal-l {
+      opacity: 0; transform: translateX(-40px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .reveal-r {
+      opacity: 0; transform: translateX(40px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .reveal-l.visible, .reveal-r.visible { opacity: 1; transform: translateX(0); }
+    .reveal-s {
+      opacity: 0; transform: scale(.92);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .reveal-s.visible { opacity: 1; transform: scale(1); }
+
+    /* Button shine sweep */
+    .btn-p { position: relative; overflow: hidden; }
+    .btn-p::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.22) 50%, transparent 70%);
+      transform: translateX(-100%);
+      transition: transform .55s ease;
+    }
+    .btn-p:hover::after { transform: translateX(100%); }
+
+    /* Card gradient border on hover */
+    .card-item, .step, .test-card {
+      position: relative;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+    .card-item::before, .test-card::before {
+      content: '';
+      position: absolute; inset: -1px;
+      border-radius: inherit;
+      background: var(--grad);
+      opacity: 0;
+      z-index: -1;
+      transition: opacity .35s ease;
+    }
+    .card-item:hover::before, .test-card:hover::before { opacity: 1; }
+    .card-item:hover, .test-card:hover {
+      background: rgba(8,8,23,.98);
+    }
+
+    /* Section h2 underline */
+    .s-head h2::after {
+      content: '';
+      display: block;
+      width: 0; height: 3px;
+      background: var(--grad);
+      border-radius: 2px;
+      margin: 10px auto 0;
+      transition: width .8s cubic-bezier(.4,0,.2,1);
+    }
+    .s-head h2.visible::after { width: 64px; }
+
+    /* Step number pulse on hover */
+    .step:hover .step-n {
+      box-shadow: 0 0 0 6px rgba(124,58,237,.15), 0 0 0 12px rgba(124,58,237,.07);
+    }
+    .step-n { transition: box-shadow .3s ease; }
+
+    /* Proof numbers glow */
+    .proof-num { text-shadow: 0 0 40px rgba(124,58,237,.35); }
+
+    /* Tracker card animated border */
+    .tracker-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid transparent;
+      background-clip: padding-box;
+      position: relative;
+    }
+    .tracker-card::after {
+      content: '';
+      position: absolute; inset: -1px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(124,58,237,.25), rgba(6,182,212,.2), rgba(124,58,237,.1));
+      z-index: -1;
+      animation: border-spin 6s linear infinite;
+      background-size: 300% 300%;
+    }
+    @keyframes border-spin {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Nav active link */
+    .nav-links a.active { color: var(--text); }
+    .nav-links a.active:not(.nav-cta) {
+      background: linear-gradient(135deg, #7C3AED, #06B6D4);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    /* Smooth section bg transitions */
+    section { transition: background .3s ease; }
+
+    /* WhatsApp bubble entrance */
+    .wa-bub {
+      animation: bub-in .4s ease both;
+    }
+    .wa-bub:nth-child(2) { animation-delay: .7s; opacity: 0; animation-fill-mode: both; }
+    @keyframes bub-in {
+      from { opacity: 0; transform: translateY(10px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* FAQ hover */
+    details:hover { border-color: rgba(124,58,237,.22); }
+
+    /* Footer link hover underline */
+    .f-links a { position: relative; }
+    .f-links a::after {
+      content: ''; position: absolute; bottom: -2px; left: 0;
+      width: 0; height: 1px; background: var(--grad);
+      transition: width .3s ease;
+    }
+    .f-links a:hover::after { width: 100%; }
+
+    /* Scroll progress bar */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px; z-index: 9999;
+      background: var(--grad);
+      width: 0%; transition: width .1s linear;
+    }
+
   </style>
 </head>
 <body>
@@ -695,7 +862,11 @@
 </nav>
 
 <!-- ===================== HERO ===================== -->
+<div id="progress-bar"></div>
 <section id="hero">
+  <div class="orb-1 hero-orb"></div>
+  <div class="orb-2 hero-orb"></div>
+  <div class="orb-3 hero-orb"></div>
   <div class="container">
     <div class="hero-grid">
 
@@ -1384,6 +1555,72 @@
       if (t) { e.preventDefault(); window.scrollTo({ top: t.getBoundingClientRect().top + scrollY - 74, behavior: 'smooth' }); }
     });
   });
+
+  // ===== SCROLL PROGRESS BAR =====
+  const progressBar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const total = document.body.scrollHeight - window.innerHeight;
+    if (progressBar) progressBar.style.width = (window.scrollY / total * 100) + '%';
+  }, { passive: true });
+
+  // ===== PARALLAX ORBS =====
+  const orb1 = document.querySelector('.orb-1');
+  const orb2 = document.querySelector('.orb-2');
+  const orb3 = document.querySelector('.orb-3');
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if (orb1) orb1.style.transform = `translateY(${y * 0.28}px)`;
+    if (orb2) orb2.style.transform = `translateY(${y * 0.15}px)`;
+    if (orb3) orb3.style.transform = `translateY(${y * 0.22}px)`;
+  }, { passive: true });
+
+  // ===== 3D CARD TILT =====
+  document.querySelectorAll('.card-item, .test-card, .tracker-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      const cx = r.width / 2, cy = r.height / 2;
+      const rx = ((y - cy) / cy) * 6;
+      const ry = ((cx - x) / cx) * 6;
+      card.style.transform = `perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-6px)`;
+      card.style.transition = 'transform .1s ease';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+      card.style.transition = 'transform .5s ease, border-color .3s, box-shadow .3s';
+    });
+  });
+
+  // ===== MAGNETIC BUTTONS =====
+  document.querySelectorAll('.btn-p, .btn-s').forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const r = btn.getBoundingClientRect();
+      const x = (e.clientX - r.left - r.width/2) * 0.12;
+      const y = (e.clientY - r.top  - r.height/2) * 0.12;
+      btn.style.transform = `translate(${x}px, ${y}px) translateY(-2px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = '';
+    });
+  });
+
+  // ===== ACTIVE NAV ON SCROLL =====
+  const sections = document.querySelectorAll('section[id]');
+  const navAs = document.querySelectorAll('.nav-links a:not(.nav-cta)');
+  const navObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navAs.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id);
+        });
+      }
+    });
+  }, { threshold: 0.35 });
+  sections.forEach(s => navObs.observe(s));
+
+  // ===== REGISTER EXTRA REVEAL CLASSES =====
+  document.querySelectorAll('.reveal-l, .reveal-r, .reveal-s').forEach(el => obs.observe(el));
+
 </script>
 </body>
 </html>
