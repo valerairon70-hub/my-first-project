@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroTracker AI — инструмент для дистрибьюторов CoralClub</title>
+  <meta name="description" content="Расшифруй диаграмму Трекера Здоровья за 2 минуты. AI создаёт готовый текст для клиента, скрипты и серию касаний.">
+  <meta property="og:title" content="NeuroTracker AI — для дистрибьюторов CoralClub">
+  <meta property="og:description" content="Трекер есть. Обучение пройдено. Но товарооборота нет. NeuroTracker AI даёт практические шаги — от первого поста до завершения программы клиента.">
+  <meta property="og:type" content="website">
+  <style>
+    /* ===========================
+       RESET & BASE
+    =========================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: #080817;
+      color: #E8E8F0;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ===========================
+       VARIABLES
+    =========================== */
+    :root {
+      --bg:       #080817;
+      --bg-1:     #0c0c22;
+      --card:     rgba(255,255,255,0.05);
+      --text:     #E8E8F0;
+      --muted:    #9090B0;
+      --purple:   #7C3AED;
+      --purple-l: #9d65f8;
+      --cyan:     #06B6D4;
+      --border:   rgba(255,255,255,0.08);
+      --grad:     linear-gradient(135deg, #7C3AED, #06B6D4);
+      --glow:     0 0 32px rgba(124,58,237,0.4);
+      --r:        16px;
+      --rs:       10px;
+    }
+
+    /* ===========================
+       UTILITIES
+    =========================== */
+    .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+    section { padding: 96px 0; }
+
+    .grad-text {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ===========================
+       SCROLL REVEAL
+    =========================== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(36px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .d1 { transition-delay: 0.08s; }
+    .d2 { transition-delay: 0.16s; }
+    .d3 { transition-delay: 0.24s; }
+    .d4 { transition-delay: 0.32s; }
+    .d5 { transition-delay: 0.40s; }
+
+    /* ===========================
+       NAVIGATION
+    =========================== */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      padding: 14px 0;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(8,8,23,0.85);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.3s;
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      max-width: 1180px; margin: 0 auto; padding: 0 24px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text);
+      font-weight: 800; font-size: 15px; letter-spacing: -0.01em;
+    }
+    .logo-svg { width: 30px; height: 30px; flex-shrink: 0; }
+    .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--purple); color: #fff !important;
+      padding: 9px 22px; border-radius: 8px; font-weight: 700 !important;
+      transition: box-shadow 0.2s, transform 0.15s !important;
+    }
+    .nav-cta:hover { box-shadow: var(--glow); transform: translateY(-1px); }
+
+    .burger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+    .burger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: 0.3s; }
+
+    /* Animated logo dots */
+    @keyframes ldot { 0%,100%{opacity:.18} 50%{opacity:1} }
+    .ld1{animation:ldot 2.4s ease-in-out infinite 0s}
+    .ld2{animation:ldot 2.4s ease-in-out infinite .3s}
+    .ld3{animation:ldot 2.4s ease-in-out infinite .6s}
+    .ld4{animation:ldot 2.4s ease-in-out infinite .9s}
+    .ld5{animation:ldot 2.4s ease-in-out infinite 1.2s}
+    .ld6{animation:ldot 2.4s ease-in-out infinite 1.5s}
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none; position: absolute; top: 100%; left: 0; right: 0;
+        flex-direction: column; gap: 0; align-items: stretch;
+        background: rgba(8,8,23,0.98); border-bottom: 1px solid var(--border);
+        padding: 12px 0;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links a { display: block; padding: 12px 24px; font-size: 15px; }
+      .nav-cta { margin: 8px 24px; text-align: center; border-radius: 8px; }
+      .burger { display: flex; }
+    }
+
+    /* ===========================
+       HERO
+    =========================== */
+    #hero {
+      min-height: 100vh; display: flex; align-items: center;
+      padding-top: 80px; position: relative; overflow: hidden;
+    }
+    #hero::before {
+      content: '';
+      position: absolute; top: -250px; right: -150px; width: 720px; height: 720px;
+      background: radial-gradient(circle, rgba(124,58,237,.14) 0%, transparent 68%);
+      pointer-events: none;
+    }
+    #hero::after {
+      content: '';
+      position: absolute; bottom: -120px; left: -100px; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(6,182,212,.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 56px;
+      align-items: center; width: 100%;
+    }
+
+    .hero-label {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      letter-spacing: .18em; text-transform: uppercase; color: var(--cyan);
+      margin-bottom: 18px;
+    }
+    h1 {
+      font-size: clamp(36px, 5.2vw, 70px); font-weight: 900; line-height: 1.1;
+      letter-spacing: -.025em; margin-bottom: 24px;
+    }
+    .hero-sub {
+      font-size: clamp(14px, 1.4vw, 16px); color: var(--muted); line-height: 1.75;
+      max-width: 480px; margin-bottom: 36px;
+    }
+    .cta-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
+
+    .btn-p {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--purple); color: #fff;
+      padding: 14px 28px; border-radius: var(--rs);
+      font-size: 15px; font-weight: 700; text-decoration: none; border: none; cursor: pointer;
+      font-family: inherit;
+      transition: box-shadow .25s, transform .15s;
+    }
+    .btn-p:hover { box-shadow: var(--glow); transform: translateY(-2px); }
+    .btn-p:active { transform: scale(.97); }
+
+    .btn-s {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent; color: var(--text);
+      padding: 14px 28px; border-radius: var(--rs);
+      font-size: 15px; font-weight: 600; text-decoration: none;
+      border: 1px solid var(--border);
+      transition: border-color .2s, background .2s, transform .15s;
+    }
+    .btn-s:hover { border-color: var(--purple); background: rgba(124,58,237,.08); transform: translateY(-2px); }
+    .btn-s:active { transform: scale(.97); }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted);
+    }
+    .pulse-dot {
+      width: 8px; height: 8px; background: #22c55e; border-radius: 50%;
+      box-shadow: 0 0 8px rgba(34,197,94,.65);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 8px rgba(34,197,94,.65)} 50%{box-shadow:0 0 18px rgba(34,197,94,1)} }
+
+    /* Tracker card */
+    .tracker-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      border-radius: 20px; padding: 26px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 24px 60px rgba(0,0,0,.45);
+      position: relative; overflow: hidden;
+    }
+    .tracker-card::before {
+      content: '';
+      position: absolute; inset: 0; border-radius: 20px;
+      background: linear-gradient(135deg, rgba(124,58,237,.06), rgba(6,182,212,.04));
+      pointer-events: none;
+    }
+    .tc-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
+    }
+    .tc-title { font-size: 13px; font-weight: 700; }
+    .tc-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .tc-badge {
+      font-size: 10px; font-weight: 700; color: var(--purple-l);
+      background: rgba(124,58,237,.18); padding: 4px 10px;
+      border-radius: 20px; border: 1px solid rgba(124,58,237,.3);
+    }
+
+    .sys-row { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
+    .sys-name { font-size: 11px; color: var(--muted); width: 78px; flex-shrink: 0; }
+    .bar-wrap { flex: 1; height: 5px; background: rgba(255,255,255,.08); border-radius: 3px; overflow: hidden; }
+    .bar { height: 100%; width: 0; border-radius: 3px; transition: width 1.4s cubic-bezier(.4,0,.2,1); }
+    .bar-r { background: linear-gradient(90deg,#ef4444,#f97316); }
+    .bar-y { background: linear-gradient(90deg,#f59e0b,#eab308); }
+    .bar-g { background: linear-gradient(90deg,#22c55e,#06B6D4); }
+    .sys-pct { font-size: 10px; font-weight: 700; width: 30px; text-align: right; }
+    .pr{ color:#f87171 } .py{ color:#fbbf24 } .pg{ color:#4ade80 }
+
+    .tc-ai {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 16px; padding: 10px 14px;
+      background: rgba(124,58,237,.1); border: 1px solid rgba(124,58,237,.22);
+      border-radius: 10px;
+    }
+    .tc-ai-icon {
+      width: 28px; height: 28px; background: var(--grad); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+    }
+    .tc-ai-text { font-size: 11px; color: var(--muted); line-height: 1.4; }
+    .tc-ai-text strong { color: var(--purple-l); }
+
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 44px; }
+      .hero-visual { order: -1; }
+      .tracker-card { max-width: 380px; margin: 0 auto; }
+    }
+    @media (max-width: 480px) {
+      .cta-row { flex-direction: column; }
+      .btn-p, .btn-s { text-align: center; justify-content: center; }
+    }
+
+    /* ===========================
+       MARQUEE
+    =========================== */
+    .marquee-wrap {
+      padding: 18px 0;
+      background: rgba(124,58,237,.07);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden; white-space: nowrap;
+    }
+    .marquee-track { display: inline-flex; animation: mq 28s linear infinite; }
+    .marquee-wrap:hover .marquee-track { animation-play-state: paused; }
+    @keyframes mq { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    .mq-item {
+      display: inline-flex; align-items: center; gap: 14px; padding: 0 20px;
+      font-size: 11px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .mq-sep { color: var(--purple); font-size: 12px; }
+
+    /* ===========================
+       PROOF BAR
+    =========================== */
+    #proof { padding: 64px 0; background: var(--bg-1); }
+    .proof-row {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 32px; text-align: center; margin-bottom: 40px;
+    }
+    .proof-num {
+      font-size: clamp(44px,6vw,72px); font-weight: 900; letter-spacing: -.03em; line-height: 1;
+      background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .proof-lbl { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.45; }
+
+    .proof-quote {
+      max-width: 680px; margin: 0 auto;
+      padding: 24px 28px; font-size: 15px; font-style: italic; color: var(--muted);
+      line-height: 1.7; text-align: center;
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
+      position: relative;
+    }
+    .proof-quote::before {
+      content: '«';
+      position: absolute; top: -14px; left: 26px;
+      font-size: 48px; color: var(--purple); line-height: 1; font-style: normal; font-weight: 900;
+    }
+    @media (max-width: 640px) { .proof-row { grid-template-columns: 1fr; } }
+
+    /* ===========================
+       SECTION HEADER
+    =========================== */
+    .s-head { text-align: center; margin-bottom: 60px; }
+    .s-label {
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .18em;
+      text-transform: uppercase; color: var(--purple-l); margin-bottom: 10px;
+    }
+    h2 {
+      font-size: clamp(28px,4vw,48px); font-weight: 800; line-height: 1.15;
+      letter-spacing: -.02em; margin-bottom: 14px;
+    }
+    .s-sub { font-size: clamp(14px,1.4vw,16px); color: var(--muted); max-width: 540px; margin: 0 auto; line-height: 1.65; }
+
+    /* ===========================
+       HOW IT WORKS
+    =========================== */
+    #how { background: var(--bg); }
+    .steps { display: flex; flex-direction: column; gap: 20px; max-width: 840px; margin: 0 auto; }
+    .step {
+      display: grid; grid-template-columns: 68px 1fr; gap: 22px; align-items: start;
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 26px;
+      transition: border-color .3s, box-shadow .3s, transform .3s;
+    }
+    .step:hover { border-color: rgba(124,58,237,.35); box-shadow: 0 8px 32px rgba(124,58,237,.1); transform: translateX(4px); }
+    .step-n {
+      width: 52px; height: 52px; border-radius: 14px; background: var(--grad);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; color: #fff; flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(124,58,237,.3);
+    }
+    .step-title {
+      font-size: 16px; font-weight: 700; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .step-tag {
+      font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--cyan); background: rgba(6,182,212,.1); padding: 2px 8px; border-radius: 4px;
+    }
+    .step-desc { font-size: 14px; color: var(--muted); line-height: 1.68; }
+
+    .trainer-pill {
+      display: flex; align-items: center; gap: 14px; justify-content: center;
+      background: rgba(124,58,237,.08); border: 1px solid rgba(124,58,237,.22);
+      border-radius: var(--r); padding: 18px 28px; max-width: 560px; margin: 36px auto 0;
+    }
+    .trainer-pill .icon { font-size: 28px; }
+    .trainer-pill p { font-size: 14px; line-height: 1.5; }
+    .trainer-pill strong { color: var(--purple-l); }
+
+    @media (max-width: 580px) {
+      .step { grid-template-columns: 1fr; gap: 14px; }
+    }
+
+    /* ===========================
+       DEMO
+    =========================== */
+    #demo { background: var(--bg-1); }
+    .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; max-width: 940px; margin: 0 auto; }
+    .demo-col { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+
+    .dc-head {
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .dc-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .dr { background:#ef4444 } .dy { background:#eab308 } .dg { background:#22c55e }
+    .dc-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-left: 6px; }
+    .dc-body { padding: 20px; }
+
+    .demo-thought {
+      margin-top: 16px; padding: 12px 14px;
+      background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.18);
+      border-radius: var(--rs); font-size: 13px; color: #fca5a5; font-style: italic; line-height: 1.55;
+    }
+
+    /* WA column */
+    .wa-head {
+      display: flex; align-items: center; gap: 10px; padding: 14px 18px;
+      background: rgba(37,211,102,.07); border-bottom: 1px solid rgba(37,211,102,.15);
+    }
+    .wa-av {
+      width: 34px; height: 34px; border-radius: 50%; background: var(--grad);
+      display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+    }
+    .wa-name { font-size: 13px; font-weight: 700; }
+    .wa-status { font-size: 10px; color: #4ade80; }
+    .wa-msgs { padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+    .wa-bub {
+      background: rgba(37,211,102,.1); border: 1px solid rgba(37,211,102,.18);
+      border-radius: 0 12px 12px 12px;
+      padding: 11px 14px; font-size: 13px; line-height: 1.6; max-width: 92%;
+    }
+    .wa-bub + .wa-bub { border-radius: 12px; }
+    .wa-time { font-size: 10px; color: var(--muted); text-align: right; margin-top: 5px; }
+    .wa-typing {
+      display: flex; align-items: center; gap: 4px; padding: 8px 12px;
+      background: rgba(37,211,102,.05); border-radius: 12px; width: fit-content;
+      border: 1px solid rgba(37,211,102,.1);
+    }
+    .wa-typing span {
+      width: 5px; height: 5px; border-radius: 50%; background: #4ade80;
+      animation: tp 1.4s ease-in-out infinite;
+    }
+    .wa-typing span:nth-child(2){animation-delay:.2s}
+    .wa-typing span:nth-child(3){animation-delay:.4s}
+    @keyframes tp { 0%,100%{opacity:.3;transform:translateY(0)} 50%{opacity:1;transform:translateY(-3px)} }
+
+    .demo-cta { text-align: center; margin-top: 36px; }
+    .disclaimer {
+      max-width: 700px; margin: 22px auto 0; padding: 14px 18px;
+      background: rgba(251,191,36,.06); border: 1px solid rgba(251,191,36,.2);
+      border-radius: var(--rs); font-size: 12px; color: rgba(253,230,138,.75);
+      text-align: center; line-height: 1.6;
+    }
+
+    @media (max-width: 740px) { .demo-grid { grid-template-columns: 1fr; } }
+
+    /* ===========================
+       FOR WHOM
+    =========================== */
+    #for-whom { background: var(--bg); }
+    .cards-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; margin-bottom: 28px; }
+    .card-item {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 26px;
+      transition: border-color .3s, box-shadow .3s, transform .3s;
+    }
+    .card-item:hover { border-color: rgba(124,58,237,.4); box-shadow: var(--glow); transform: translateY(-4px); }
+    .card-icon {
+      width: 48px; height: 48px; border-radius: 12px; background: var(--grad);
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
+      margin-bottom: 16px; box-shadow: 0 4px 16px rgba(124,58,237,.25);
+    }
+    .card-ttl { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+    .card-txt { font-size: 13px; color: var(--muted); line-height: 1.65; }
+    .card-res { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 13px; color: var(--cyan); font-weight: 600; }
+
+    .not-for {
+      background: rgba(239,68,68,.04); border: 1px solid rgba(239,68,68,.15);
+      border-radius: var(--r); padding: 22px 28px; max-width: 680px; margin: 0 auto;
+    }
+    .not-for-ttl { font-size: 13px; font-weight: 700; color: #fca5a5; margin-bottom: 10px; }
+    .not-for ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .not-for li { font-size: 13px; color: var(--muted); padding-left: 18px; position: relative; }
+    .not-for li::before { content: '—'; position: absolute; left: 0; color: rgba(239,68,68,.5); }
+
+    @media (max-width: 860px) { .cards-3 { grid-template-columns: 1fr; } }
+
+    /* ===========================
+       AUTHOR
+    =========================== */
+    #author { background: var(--bg-1); }
+    .author-wrap {
+      display: grid; grid-template-columns: 260px 1fr; gap: 56px;
+      align-items: start; max-width: 880px; margin: 0 auto;
+    }
+    .author-img {
+      width: 220px; height: 280px; border-radius: 20px;
+      background: linear-gradient(135deg, rgba(124,58,237,.2), rgba(6,182,212,.15));
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 72px; overflow: hidden;
+    }
+    .author-img-lbl { font-size: 12px; color: var(--muted); text-align: center; margin-top: 12px; line-height: 1.5; }
+    .author-name { font-size: 22px; font-weight: 800; }
+    .author-role { font-size: 13px; color: var(--cyan); font-weight: 600; margin-top: 3px; margin-bottom: 18px; }
+    .author-text { font-size: 14px; color: var(--muted); line-height: 1.8; font-style: italic; margin-bottom: 24px; }
+    .author-text em { font-style: normal; color: var(--text); }
+    .author-badges { display: flex; flex-direction: column; gap: 10px; }
+    .abadge { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
+    .abadge .ico {
+      width: 34px; height: 34px; background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+    }
+
+    @media (max-width: 720px) {
+      .author-wrap { grid-template-columns: 1fr; gap: 28px; }
+      .author-photo-col { display: flex; align-items: flex-start; gap: 18px; }
+      .author-img { width: 110px; height: 140px; font-size: 44px; }
+    }
+
+    /* ===========================
+       TESTIMONIALS
+    =========================== */
+    #testimonials { background: var(--bg); }
+    .test-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
+    .test-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 26px;
+      position: relative; transition: border-color .3s, transform .3s;
+    }
+    .test-card:hover { border-color: rgba(124,58,237,.3); transform: translateY(-4px); }
+    .test-metric {
+      position: absolute; top: 18px; right: 18px; font-size: 10px; font-weight: 700;
+      background: rgba(34,197,94,.14); color: #4ade80; border: 1px solid rgba(34,197,94,.22);
+      padding: 3px 9px; border-radius: 20px;
+    }
+    .test-q { font-size: 30px; color: var(--purple); line-height: 1; margin-bottom: 14px; font-family: Georgia, serif; }
+    .test-txt { font-size: 14px; color: var(--text); line-height: 1.7; font-style: italic; margin-bottom: 20px; }
+    .test-author { display: flex; align-items: center; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .test-av {
+      width: 38px; height: 38px; border-radius: 50%; background: var(--grad);
+      display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .test-name { font-size: 13px; font-weight: 700; }
+    .test-meta { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+    @media (max-width: 860px) { .test-grid { grid-template-columns: 1fr; } }
+
+    /* ===========================
+       FAQ
+    =========================== */
+    #faq { background: var(--bg-1); }
+    .faq-list { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+    details {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden;
+      transition: border-color .2s;
+    }
+    details[open] { border-color: rgba(124,58,237,.3); }
+    summary {
+      padding: 18px 22px; font-size: 15px; font-weight: 600; cursor: pointer;
+      list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      user-select: none; transition: color .2s;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: '+'; font-size: 22px; color: var(--purple); font-weight: 300; flex-shrink: 0; transition: transform .3s; }
+    details[open] summary::after { transform: rotate(45deg); }
+    details[open] summary { color: var(--purple-l); }
+    .faq-a { padding: 0 22px 18px; font-size: 14px; color: var(--muted); line-height: 1.72; }
+
+    /* ===========================
+       CONTACT
+    =========================== */
+    #contact { background: var(--bg); }
+    .contact-wrap { max-width: 640px; margin: 0 auto; text-align: center; }
+    .contact-form {
+      background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+      padding: 36px 40px; margin-top: 36px; text-align: left;
+    }
+    .f-field { margin-bottom: 18px; }
+    .f-label { display: block; font-size: 12px; font-weight: 700; letter-spacing: .05em; color: var(--muted); margin-bottom: 7px; }
+    .f-input, .f-sel {
+      width: 100%; background: rgba(255,255,255,.04); border: 1px solid var(--border);
+      border-radius: var(--rs); padding: 13px 16px; font-size: 14px; color: var(--text);
+      outline: none; transition: border-color .2s, box-shadow .2s; font-family: inherit;
+    }
+    .f-input:focus, .f-sel:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(6,182,212,.1); }
+    .f-input::placeholder { color: var(--muted); opacity: .6; }
+    .f-sel { appearance: none; cursor: pointer; }
+    .f-sel option { background: #1a1a35; }
+    .f-btn {
+      width: 100%; background: var(--grad); color: #fff; border: none;
+      border-radius: var(--rs); padding: 15px; font-size: 15px; font-weight: 700;
+      cursor: pointer; font-family: inherit; margin-top: 6px;
+      transition: opacity .2s, transform .15s, box-shadow .2s;
+    }
+    .f-btn:hover { opacity: .92; transform: translateY(-1px); box-shadow: var(--glow); }
+    .f-btn:active { transform: scale(.98); }
+
+    .f-success { display: none; text-align: center; padding: 28px; }
+    .f-success .s-ico { font-size: 44px; margin-bottom: 14px; }
+    .f-success h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .f-success p { font-size: 14px; color: var(--muted); }
+
+    .or-line {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 12px; color: var(--muted); margin: 24px 0;
+    }
+    .or-line::before, .or-line::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .direct-row { display: flex; gap: 12px; justify-content: center; }
+    .d-btn {
+      display: flex; align-items: center; gap: 9px; padding: 13px 22px;
+      border-radius: var(--rs); font-size: 14px; font-weight: 700;
+      text-decoration: none; color: var(--text); border: 1px solid var(--border); background: var(--card);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .d-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+    .d-btn.tg { border-color: rgba(38,169,224,.3); }
+    .d-btn.tg:hover { box-shadow: 0 8px 24px rgba(38,169,224,.18); }
+    .d-btn.wa { border-color: rgba(37,211,102,.3); }
+    .d-btn.wa:hover { box-shadow: 0 8px 24px rgba(37,211,102,.18); }
+
+    .resp-time { font-size: 12px; color: var(--muted); margin-top: 18px; text-align: center; }
+
+    .privacy-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      margin-top: 24px; padding: 14px 18px; text-align: left;
+      background: rgba(124,58,237,.06); border: 1px solid rgba(124,58,237,.15); border-radius: var(--rs);
+      font-size: 12px; color: var(--muted); line-height: 1.55;
+    }
+    .privacy-row .p-ico { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+    @media (max-width: 480px) {
+      .contact-form { padding: 24px 20px; }
+      .direct-row { flex-direction: column; }
+      .d-btn { justify-content: center; }
+    }
+
+    /* ===========================
+       FOOTER
+    =========================== */
+    footer { background: var(--bg-1); border-top: 1px solid var(--border); padding: 56px 0 28px; }
+    .footer-top {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px;
+    }
+    .f-logo {
+      display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 800;
+      color: var(--text); text-decoration: none; margin-bottom: 10px;
+    }
+    .f-desc { font-size: 12px; color: var(--muted); line-height: 1.65; max-width: 220px; }
+    .f-col-ttl { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+    .f-links { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+    .f-links a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color .2s; }
+    .f-links a:hover { color: var(--text); }
+
+    .footer-disc {
+      padding: 16px 20px; margin-bottom: 24px;
+      background: rgba(251,191,36,.05); border: 1px solid rgba(251,191,36,.14); border-radius: var(--rs);
+      font-size: 11px; color: rgba(253,230,138,.65); line-height: 1.6; text-align: center;
+    }
+    .footer-bottom {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 18px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--muted);
+    }
+
+    @media (max-width: 720px) {
+      .footer-top { grid-template-columns: 1fr; gap: 28px; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    }
+
+    /* ===========================
+       CUSTOM CURSOR (desktop)
+    =========================== */
+    .cur { display:none; width:18px; height:18px; border:2px solid var(--purple); border-radius:50%; position:fixed; top:0; left:0; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:width .2s,height .2s,border-color .2s; }
+    .cur-dot { display:none; width:4px; height:4px; background:var(--purple); border-radius:50%; position:fixed; top:0; left:0; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); }
+    @media (pointer:fine) { body{cursor:none} .cur,.cur-dot{display:block} }
+
+    /* ===========================
+       NOISE GRAIN
+    =========================== */
+    body::before {
+      content:''; position:fixed; inset:0; opacity:.022; pointer-events:none; z-index:9998;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)}
+      40%{transform:translateX(7px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
+    }
+  </style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div class="cur" id="cur"></div>
+<div class="cur-dot" id="curD"></div>
+
+<!-- ===================== NAV ===================== -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <svg class="logo-svg" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle class="ld1" cx="7"  cy="7"  r="3" fill="#7C3AED"/>
+        <circle class="ld2" cx="15" cy="7"  r="3" fill="#9d65f8"/>
+        <circle class="ld3" cx="23" cy="7"  r="3" fill="#06B6D4"/>
+        <rect   class="ld4" x="4"  y="14" width="8"  height="3" rx="1.5" fill="#7C3AED"/>
+        <rect   class="ld5" x="11" y="14" width="12" height="3" rx="1.5" fill="#9d65f8"/>
+        <rect   class="ld6" x="4"  y="21" width="16" height="3" rx="1.5" fill="#06B6D4"/>
+      </svg>
+      NeuroTracker AI
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#how">Как работает</a></li>
+      <li><a href="#demo">Демо</a></li>
+      <li><a href="#for-whom">Для кого</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#contact" class="nav-cta">Попробовать →</a></li>
+    </ul>
+    <button class="burger" id="burger" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-grid">
+
+      <!-- Text -->
+      <div>
+        <span class="hero-label reveal">NEUROTRACKER AI · ДЛЯ ДИСТРИБЬЮТОРОВ CORALCLUB</span>
+        <h1 class="reveal d1">
+          Трекер Здоровья есть.<br>
+          Обучение пройдено.<br>
+          Но <span class="grad-text">товарооборота</span> — нет.
+        </h1>
+        <p class="hero-sub reveal d2">
+          У большинства дистрибьюторов есть знания о Трекере — но нет практических шагов,
+          которые превращают эти знания в доход. NeuroTracker AI даёт эти шаги:
+          от первого поста до завершения программы клиента.
+        </p>
+        <div class="cta-row reveal d3">
+          <a href="#contact" class="btn-p">Попробовать бесплатно →</a>
+          <a href="#how" class="btn-s">Как это работает ↓</a>
+        </div>
+        <div class="hero-badge reveal d4">
+          <span class="pulse-dot"></span>
+          Первые 3 расшифровки — бесплатно, без карты
+        </div>
+      </div>
+
+      <!-- Tracker visual -->
+      <div class="hero-visual reveal d2">
+        <div class="tracker-card">
+          <div class="tc-head">
+            <div>
+              <div class="tc-title">Трекер Здоровья</div>
+              <div class="tc-sub">Результаты диагностики клиента</div>
+            </div>
+            <div class="tc-badge">CoralClub</div>
+          </div>
+
+          <div class="sys-row">
+            <span class="sys-name">ЖКТ</span>
+            <div class="bar-wrap"><div class="bar bar-y" data-w="67"></div></div>
+            <span class="sys-pct py">67%</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-name">Сердце</span>
+            <div class="bar-wrap"><div class="bar bar-r" data-w="54"></div></div>
+            <span class="sys-pct pr">54%</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-name">Печень</span>
+            <div class="bar-wrap"><div class="bar bar-y" data-w="71"></div></div>
+            <span class="sys-pct py">71%</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-name">Гормоны</span>
+            <div class="bar-wrap"><div class="bar bar-r" data-w="38"></div></div>
+            <span class="sys-pct pr">38%</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-name">Иммунитет</span>
+            <div class="bar-wrap"><div class="bar bar-g" data-w="82"></div></div>
+            <span class="sys-pct pg">82%</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-name">Нервная</span>
+            <div class="bar-wrap"><div class="bar bar-r" data-w="45"></div></div>
+            <span class="sys-pct pr">45%</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-name">Почки</span>
+            <div class="bar-wrap"><div class="bar bar-y" data-w="63"></div></div>
+            <span class="sys-pct py">63%</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-name">Лимфа</span>
+            <div class="bar-wrap"><div class="bar bar-r" data-w="29"></div></div>
+            <span class="sys-pct pr">29%</span>
+          </div>
+
+          <div class="tc-ai">
+            <div class="tc-ai-icon">🧠</div>
+            <div class="tc-ai-text">
+              <strong>NeuroTracker AI</strong> готов выстроить причинно-следственную цепочку
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MARQUEE ===================== -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="mq-item">ПРИВЛЕЧЕНИЕ КЛИЕНТОВ <span class="mq-sep">·</span></span>
+    <span class="mq-item">РАСШИФРОВКА ДИАГРАММЫ <span class="mq-sep">·</span></span>
+    <span class="mq-item">ПРИЧИННО-СЛЕДСТВЕННЫЕ СВЯЗИ <span class="mq-sep">·</span></span>
+    <span class="mq-item">СКРИПТЫ ДЛЯ КЛИЕНТА <span class="mq-sep">·</span></span>
+    <span class="mq-item">СОПРОВОЖДЕНИЕ ПРОГРАММЫ <span class="mq-sep">·</span></span>
+    <span class="mq-item">ПРОКАЧКА НАВЫКА <span class="mq-sep">·</span></span>
+    <span class="mq-item">ТОВАРООБОРОТ И ДОХОД <span class="mq-sep">·</span></span>
+    <span class="mq-item">МЕТОДОЛОГИЯ БУТАКОВОЙ <span class="mq-sep">·</span></span>
+    <!-- Duplicate for seamless loop -->
+    <span class="mq-item">ПРИВЛЕЧЕНИЕ КЛИЕНТОВ <span class="mq-sep">·</span></span>
+    <span class="mq-item">РАСШИФРОВКА ДИАГРАММЫ <span class="mq-sep">·</span></span>
+    <span class="mq-item">ПРИЧИННО-СЛЕДСТВЕННЫЕ СВЯЗИ <span class="mq-sep">·</span></span>
+    <span class="mq-item">СКРИПТЫ ДЛЯ КЛИЕНТА <span class="mq-sep">·</span></span>
+    <span class="mq-item">СОПРОВОЖДЕНИЕ ПРОГРАММЫ <span class="mq-sep">·</span></span>
+    <span class="mq-item">ПРОКАЧКА НАВЫКА <span class="mq-sep">·</span></span>
+    <span class="mq-item">ТОВАРООБОРОТ И ДОХОД <span class="mq-sep">·</span></span>
+    <span class="mq-item">МЕТОДОЛОГИЯ БУТАКОВОЙ <span class="mq-sep">·</span></span>
+  </div>
+</div>
+
+<!-- ===================== PROOF BAR ===================== -->
+<section id="proof">
+  <div class="container">
+    <div class="proof-row">
+      <div class="reveal">
+        <div class="proof-num" data-count="40" data-suffix="+">0+</div>
+        <div class="proof-lbl">лет опыта —<br>методология д-ра Бутаковой</div>
+      </div>
+      <div class="reveal d1">
+        <div class="proof-num">2 мин</div>
+        <div class="proof-lbl">вместо 45 на расшифровку<br>одной диаграммы</div>
+      </div>
+      <div class="reveal d2">
+        <div class="proof-num" data-count="5" data-suffix=" этапов">0 этапов</div>
+        <div class="proof-lbl">от первого поста<br>до завершения программы</div>
+      </div>
+    </div>
+    <div class="proof-quote reveal d3">
+      Как говорит Ольга Алексеевна Бутакова: главное — донести информацию через
+      причинно-следственную связь, увязав её с состоянием клиента.
+      Именно это и выстраивает NeuroTracker AI.
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<section id="how">
+  <div class="container">
+    <div class="s-head">
+      <span class="s-label reveal">Механика инструмента</span>
+      <h2 class="reveal d1">Как это работает</h2>
+      <p class="s-sub reveal d2">Не чёрный ящик — понятный цикл из 5 шагов, который ведёт клиента от первого касания до завершения программы восстановления</p>
+    </div>
+
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-n">1</div>
+        <div>
+          <div class="step-title">Привлечение <span class="step-tag">До трекера</span></div>
+          <p class="step-desc">Ещё до того, как клиент прошёл тест. AI генерирует серию постов для соцсетей и Telegram, которые вызывают интерес к теме здоровья и желание пройти Трекер — без давления и MLM-риторики. Контент, а не реклама.</p>
+        </div>
+      </div>
+      <div class="step reveal d1">
+        <div class="step-n">2</div>
+        <div>
+          <div class="step-title">Расшифровка диаграммы <span class="step-tag">Ключевой этап</span></div>
+          <p class="step-desc">Ты вводишь результаты Трекера клиента. AI выстраивает логическую цепочку: какие системы связаны, что на что влияет, как состояние можно изменить — по методологии Бутаковой. Не просто цифры — живая связь с ощущениями клиента.</p>
+        </div>
+      </div>
+      <div class="step reveal d2">
+        <div class="step-n">3</div>
+        <div>
+          <div class="step-title">Скрипт и текст для клиента</div>
+          <p class="step-desc">Готовый текст для WhatsApp или Telegram: объяснение на понятном языке, через заботу, без диагнозов, через то состояние, которое клиент сам бы описал. Плюс скрипт разговора — что сказать, если клиент задаёт вопросы.</p>
+        </div>
+      </div>
+      <div class="step reveal d3">
+        <div class="step-n">4</div>
+        <div>
+          <div class="step-title">Сопровождение программы <span class="step-tag">Удержание</span></div>
+          <p class="step-desc">Когда клиент начал программу восстановления — AI создаёт последовательную схему касаний: что писать на 3-й день, на 2-й неделе, в конце месяца. Клиент чувствует внимание, доходит до результата и становится лояльным.</p>
+        </div>
+      </div>
+      <div class="step reveal d4">
+        <div class="step-n">5</div>
+        <div>
+          <div class="step-title">Прокачка навыка <span class="step-tag">Долгосрочно</span></div>
+          <p class="step-desc">Видя логику AI снова и снова, ты начинаешь мыслить теми же категориями и со временем строишь эти цепочки самостоятельно. Инструмент становится тренажёром твоей экспертности.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="trainer-pill reveal">
+      <span class="icon">🎓</span>
+      <p><strong>Это не просто инструмент — это тренажёр.</strong><br>
+      Каждое использование прокачивает тебя как специалиста по методологии автора Трекера Здоровья.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== DEMO ===================== -->
+<section id="demo">
+  <div class="container">
+    <div class="s-head">
+      <span class="s-label reveal">Демо</span>
+      <h2 class="reveal d1">Смотри как это выглядит</h2>
+      <p class="s-sub reveal d2">До — что видит дистрибьютор. После — что он отправляет клиенту за 2 минуты.</p>
+    </div>
+
+    <div class="demo-grid">
+      <!-- BEFORE -->
+      <div class="demo-col reveal">
+        <div class="dc-head">
+          <span class="dc-dot dr"></span>
+          <span class="dc-dot dy"></span>
+          <span class="dc-dot dg"></span>
+          <span class="dc-label">До — диаграмма клиента</span>
+        </div>
+        <div class="dc-body">
+          <div class="sys-row">
+            <span class="sys-name">ЖКТ</span>
+            <div class="bar-wrap"><div class="bar bar-y" data-w="67"></div></div>
+            <span class="sys-pct py">67%</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-name">Сердце</span>
+            <div class="bar-wrap"><div class="bar bar-r" data-w="54"></div></div>
+            <span class="sys-pct pr">54%</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-name">Гормоны</span>
+            <div class="bar-wrap"><div class="bar bar-r" data-w="38"></div></div>
+            <span class="sys-pct pr">38%</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-name">Лимфа</span>
+            <div class="bar-wrap"><div class="bar bar-r" data-w="29"></div></div>
+            <span class="sys-pct pr">29%</span>
+          </div>
+          <div class="demo-thought">
+            «Ну там что-то с ЖКТ и сердцем... Как это связано? С чего начать разговор?»
+          </div>
+        </div>
+      </div>
+
+      <!-- AFTER -->
+      <div class="demo-col reveal d2">
+        <div class="wa-head">
+          <div class="wa-av">🤖</div>
+          <div>
+            <div class="wa-name">NeuroTracker AI</div>
+            <div class="wa-status">● онлайн</div>
+          </div>
+        </div>
+        <div class="wa-msgs">
+          <div class="wa-bub">
+            Ваш Трекер показывает цепочку: лимфатическая система (29%) не справляется с выводом токсинов → это перегружает ЖКТ → в ответ гормоны работают в режиме стресса (38%) → сердцу труднее работать стабильно (54%).
+            <div class="wa-time">только что</div>
+          </div>
+          <div class="wa-bub">
+            Хорошая новость — это обратимо. Когда мы поддержим лимфу и ЖКТ, вся цепочка начнёт восстанавливаться. Ольга Алексеевна называет это «запуском каскада восстановления».
+            <div class="wa-time">только что</div>
+          </div>
+          <div class="wa-typing">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-cta reveal">
+      <a href="#contact" class="btn-p">Попробовать со своей диаграммой →</a>
+    </div>
+    <div class="disclaimer reveal">
+      NeuroTracker AI — образовательный инструмент. Не является медицинским диагнозом и не заменяет консультацию врача. Создан для информационной поддержки дистрибьюторов CoralClub.
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOR WHOM ===================== -->
+<section id="for-whom">
+  <div class="container">
+    <div class="s-head">
+      <span class="s-label reveal">Аудитория</span>
+      <h2 class="reveal d1">Для кого этот инструмент</h2>
+    </div>
+
+    <div class="cards-3">
+      <div class="card-item reveal">
+        <div class="card-icon">🌱</div>
+        <div class="card-ttl">Начинающий дистрибьютор</div>
+        <p class="card-txt">Ты только начинаешь работать с Трекером и ещё не чувствуешь уверенности. Каждый разговор с клиентом — стресс. Боишься ошибиться или сказать что-то не то.</p>
+        <div class="card-res">→ AI показывает логику — ты учишься прямо в процессе работы</div>
+      </div>
+      <div class="card-item reveal d1">
+        <div class="card-icon">⚡</div>
+        <div class="card-ttl">Опытный дистрибьютор</div>
+        <p class="card-txt">Ты уже работаешь с Трекером, понимаешь суть — но тратишь 30–60 минут на каждый разбор. Клиентов много, а времени катастрофически не хватает.</p>
+        <div class="card-res">→ AI делает это за 2 минуты — ты масштабируешь работу</div>
+      </div>
+      <div class="card-item reveal d2">
+        <div class="card-icon">🏗️</div>
+        <div class="card-ttl">Лидер с командой</div>
+        <p class="card-txt">Ты строишь структуру и тратишь часы, объясняя каждому новичку как работать с диаграммой. Это мешает другим бизнес-процессам.</p>
+        <div class="card-res">→ Дай инструмент команде — он обучает вместо тебя</div>
+      </div>
+    </div>
+
+    <div class="not-for reveal" style="margin-top:28px">
+      <div class="not-for-ttl">⚠️ Инструмент не подходит, если:</div>
+      <ul>
+        <li>Вы ищете замену медицинской диагностике</li>
+        <li>У вас нет ни одного клиента, прошедшего Трекер Здоровья</li>
+        <li>Вы хотите «продавать» без обучения и понимания продукта</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== AUTHOR ===================== -->
+<section id="author">
+  <div class="container">
+    <div class="s-head">
+      <span class="s-label reveal">Автор</span>
+      <h2 class="reveal d1">Кто создал NeuroTracker AI</h2>
+    </div>
+
+    <div class="author-wrap">
+      <div class="author-photo-col reveal">
+        <div class="author-img"><span style="opacity:.3">👤</span></div>
+        <div class="author-img-lbl">Валерийс Созанов<br><span style="color:var(--cyan)">Дистрибьютор CoralClub</span></div>
+      </div>
+      <div class="reveal d1">
+        <div class="author-name">Валерийс Созанов</div>
+        <div class="author-role">Дистрибьютор CoralClub · Латвия</div>
+        <p class="author-text">
+          «Я сам прошёл через это. Клиент присылал диаграмму — я смотрел на неё и не знал, с чего начать.
+          <em>Боялся ошибиться и наговорить глупостей.</em> Тратил почти час на подготовку к одному разговору.
+          <br><br>
+          Я создал NeuroTracker AI для себя — а потом понял, что это нужно каждому дистрибьютору,
+          который серьёзно работает с Трекером, <em>хочет помочь большему числу людей и создать реальный товарооборот.</em>»
+        </p>
+        <div class="author-badges">
+          <div class="abadge">
+            <div class="ico">🔒</div>
+            Данные клиентов не сохраняются и не передаются третьим лицам
+          </div>
+          <div class="abadge">
+            <div class="ico">📚</div>
+            Методология основана на подходе д-ра О.А. Бутаковой
+          </div>
+          <div class="abadge">
+            <div class="ico">🤝</div>
+            Создано дистрибьютором — для дистрибьюторов
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS ===================== -->
+<section id="testimonials">
+  <div class="container">
+    <div class="s-head">
+      <span class="s-label reveal">Отзывы</span>
+      <h2 class="reveal d1">Что говорят те, кто уже использует</h2>
+    </div>
+
+    <div class="test-grid">
+      <div class="test-card reveal">
+        <div class="test-metric">−37 мин</div>
+        <div class="test-q">«</div>
+        <p class="test-txt">Я раньше избегала разговора про диаграмму — теперь это мой любимый момент с клиентом. Время разбора сократилось с 45 до 8 минут. Клиент наконец понимает почему именно этот продукт.</p>
+        <div class="test-author">
+          <div class="test-av">О</div>
+          <div>
+            <div class="test-name">Ольга</div>
+            <div class="test-meta">Рига · Дистрибьютор CoralClub, 3 года</div>
+          </div>
+        </div>
+      </div>
+      <div class="test-card reveal d1">
+        <div class="test-q">«</div>
+        <p class="test-txt">NeuroTracker AI выстраивает причинно-следственную связь, увязывая её с состоянием клиента — так, как это делает Ольга Алексеевна на семинарах. Клиенты впервые понимают, почему именно этот продукт.</p>
+        <div class="test-author">
+          <div class="test-av">Н</div>
+          <div>
+            <div class="test-name">Наталья</div>
+            <div class="test-meta">Вильнюс · Лидер CoralClub, 5 лет</div>
+          </div>
+        </div>
+      </div>
+      <div class="test-card reveal d2">
+        <div class="test-metric">47 партнёров</div>
+        <div class="test-q">«</div>
+        <p class="test-txt">Новички в моей команде за первую неделю уже уверенно объясняют диаграммы. Раньше я делал это за каждого — в ущерб другим процессам бизнеса.</p>
+        <div class="test-author">
+          <div class="test-av">И</div>
+          <div>
+            <div class="test-name">Игорь</div>
+            <div class="test-meta">Таллин · Лидер, структура 47 дистрибьюторов</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section id="faq">
+  <div class="container">
+    <div class="s-head">
+      <span class="s-label reveal">Вопросы</span>
+      <h2 class="reveal d1">Частые вопросы</h2>
+    </div>
+
+    <div class="faq-list">
+      <details class="reveal">
+        <summary>NeuroTracker AI официально одобрен CoralClub?</summary>
+        <div class="faq-a">NeuroTracker AI — независимый образовательный инструмент, созданный дистрибьютором CoralClub для дистрибьюторов и лидеров компании. Он не является официальным продуктом компании. Методология работы с Трекером основана на материалах и семинарах д-ра Ольги Алексеевны Бутаковой.</div>
+      </details>
+      <details class="reveal d1">
+        <summary>Куда уходят данные диаграммы моего клиента?</summary>
+        <div class="faq-a">Никуда. Данные обрабатываются в момент запроса и не сохраняются. Ни вы, ни ваш клиент не идентифицируются в системе. Ваша конфиденциальность и конфиденциальность ваших клиентов полностью защищены.</div>
+      </details>
+      <details class="reveal d2">
+        <summary>Это законно? Не будет ли звучать как медицинский диагноз?</summary>
+        <div class="faq-a">Инструмент создаёт образовательные тексты — не диагнозы. Все формулировки составлены в духе методологии Бутаковой: через заботу и смысл, без медицинских предписаний. Вы сами читаете текст перед отправкой и можете его отредактировать.</div>
+      </details>
+      <details class="reveal d3">
+        <summary>Нужны ли технические знания для работы?</summary>
+        <div class="faq-a">Нет. Если вы умеете пользоваться WhatsApp — справитесь. Вводите показатели Трекера → получаете готовый текст. Вся инструкция на одном экране. Никакого программирования.</div>
+      </details>
+      <details class="reveal d4">
+        <summary>Сколько стоит? Что будет после пробного периода?</summary>
+        <div class="faq-a">Первые 3 расшифровки — бесплатно, без регистрации карты. Дальнейшие условия — при личном разговоре. Никаких автоматических списаний без вашего ведома. Всё прозрачно.</div>
+      </details>
+      <details class="reveal d5">
+        <summary>Я новичок в CoralClub. Инструмент поможет научиться?</summary>
+        <div class="faq-a">Именно для этого он создан. Вы видите, как AI выстраивает логику причинно-следственных связей с состоянием клиента — и учитесь думать так же. Многие пишут, что после 10–15 диаграмм начинают делать это самостоятельно.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CONTACT ===================== -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-wrap">
+      <div class="s-head">
+        <span class="s-label reveal">Начать</span>
+        <h2 class="reveal d1">Попробуй на реальной диаграмме</h2>
+        <p class="s-sub reveal d2">Первые 3 расшифровки — бесплатно.<br>Оставь контакт — пришлю ссылку и отвечу на любые вопросы.</p>
+      </div>
+
+      <div class="contact-form reveal d1">
+        <div id="fBody">
+          <div class="f-field">
+            <label class="f-label" for="fname">Ваше имя</label>
+            <input class="f-input" type="text" id="fname" placeholder="Как вас зовут?" autocomplete="name">
+          </div>
+          <div class="f-field">
+            <label class="f-label" for="fcontact">Telegram или WhatsApp</label>
+            <input class="f-input" type="text" id="fcontact" placeholder="@username или +371...">
+          </div>
+          <div class="f-field">
+            <label class="f-label" for="fexp">Как давно работаете с Трекером? <span style="font-weight:400;color:var(--muted)">(необязательно)</span></label>
+            <select class="f-input f-sel" id="fexp">
+              <option value="">Выберите...</option>
+              <option>Только начинаю</option>
+              <option>До 1 года</option>
+              <option>1–3 года</option>
+              <option>3+ лет</option>
+            </select>
+          </div>
+          <button class="f-btn" onclick="sendForm(event)">Получить доступ →</button>
+        </div>
+        <div class="f-success" id="fSuccess">
+          <div class="s-ico">✅</div>
+          <h3>Заявка принята!</h3>
+          <p>Свяжусь с вами в течение 24 часов и пришлю ссылку на инструмент. Спасибо!</p>
+        </div>
+      </div>
+
+      <div class="or-line reveal">или напишите напрямую</div>
+
+      <div class="direct-row reveal d1">
+        <a href="https://t.me/username" class="d-btn tg" target="_blank">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8l-1.7 8c-.12.56-.45.7-.91.43l-2.52-1.86-1.21 1.17c-.13.13-.25.25-.51.25l.18-2.57 4.65-4.2c.2-.18-.04-.28-.31-.1L7.51 14.52l-2.47-.77c-.54-.17-.55-.54.11-.8l9.66-3.73c.45-.16.84.11.83.58z" fill="#26A9E0"/></svg>
+          Telegram
+        </a>
+        <a href="https://wa.me/371xxxxxxxx" class="d-btn wa" target="_blank">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.938-1.42A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm5.137 14.16c-.217.605-1.075 1.11-1.75 1.255-.467.1-1.076.178-3.128-.672-2.625-1.065-4.313-3.74-4.444-3.912-.126-.173-1.056-1.406-1.056-2.68 0-1.275.667-1.9.904-2.162.217-.24.473-.3.631-.3l.454.008c.146.007.342-.055.535.407.2.477.677 1.65.735 1.77.06.12.1.26.02.42-.08.16-.12.26-.24.4-.12.14-.253.313-.36.42-.12.12-.245.25-.105.49.14.24.622 1.025 1.336 1.66.918.82 1.69 1.073 1.93 1.193.24.12.38.1.52-.06.14-.16.6-.7.76-.94.16-.24.32-.2.54-.12.22.08 1.397.66 1.637.78.24.12.4.18.46.28.06.1.06.58-.157 1.184z" fill="#25D366"/></svg>
+          WhatsApp
+        </a>
+      </div>
+
+      <p class="resp-time reveal">⏱ Отвечаю в течение 24 часов</p>
+
+      <div class="privacy-row reveal">
+        <span class="p-ico">🔒</span>
+        <div><strong>Конфиденциальность</strong><br>
+        Ваши данные и данные ваших клиентов не сохраняются. Ничего не передаётся третьим лицам.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div>
+        <a href="#" class="f-logo">
+          <svg style="width:26px;height:26px" viewBox="0 0 30 30" fill="none">
+            <circle class="ld1" cx="7" cy="7" r="3" fill="#7C3AED"/>
+            <circle class="ld2" cx="15" cy="7" r="3" fill="#9d65f8"/>
+            <circle class="ld3" cx="23" cy="7" r="3" fill="#06B6D4"/>
+            <rect class="ld4" x="4" y="14" width="8" height="3" rx="1.5" fill="#7C3AED"/>
+            <rect class="ld5" x="11" y="14" width="12" height="3" rx="1.5" fill="#9d65f8"/>
+            <rect class="ld6" x="4" y="21" width="16" height="3" rx="1.5" fill="#06B6D4"/>
+          </svg>
+          NeuroTracker AI
+        </a>
+        <p class="f-desc">Цифровой помощник для дистрибьюторов CoralClub. От первого поста до завершения программы клиента.</p>
+      </div>
+      <div>
+        <div class="f-col-ttl">Навигация</div>
+        <ul class="f-links">
+          <li><a href="#how">Как работает</a></li>
+          <li><a href="#demo">Демо</a></li>
+          <li><a href="#for-whom">Для кого</a></li>
+          <li><a href="#author">Автор</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#contact">Контакт</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="f-col-ttl">Контакты</div>
+        <ul class="f-links">
+          <li><a href="https://t.me/username" target="_blank">✈ Telegram</a></li>
+          <li><a href="https://wa.me/371xxxxxxxx" target="_blank">💬 WhatsApp</a></li>
+        </ul>
+        <div class="f-col-ttl" style="margin-top:20px">Демо-версия</div>
+        <ul class="f-links">
+          <li><a href="landing.html" target="_blank">Открыть демо →</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-disc">
+      NeuroTracker AI — образовательный инструмент для дистрибьюторов CoralClub.
+      Не является официальным продуктом компании CoralClub.
+      Не является медицинским диагнозом и не заменяет консультацию врача.
+      Методология основана на семинарах д-ра О.А. Бутаковой.
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Valerijs Sozanov · Создано для дистрибьюторов CoralClub</span>
+      <span>Латвия</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ===== BURGER MENU =====
+  const burger = document.getElementById('burger');
+  const navLinks = document.getElementById('navLinks');
+  burger.addEventListener('click', () => {
+    const open = navLinks.classList.toggle('open');
+    const [s1, s2, s3] = burger.querySelectorAll('span');
+    if (open) {
+      s1.style.transform = 'rotate(45deg) translate(5px,5px)';
+      s2.style.opacity = '0';
+      s3.style.transform = 'rotate(-45deg) translate(5px,-5px)';
+    } else {
+      [s1,s2,s3].forEach(s => { s.style.transform=''; s.style.opacity=''; });
+    }
+  });
+  navLinks.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      navLinks.classList.remove('open');
+      burger.querySelectorAll('span').forEach(s => { s.style.transform=''; s.style.opacity=''; });
+    });
+  });
+
+  // ===== SCROLL REVEAL =====
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1, rootMargin: '0px 0px -32px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  // ===== TRACKER BARS =====
+  // Animate all bars to their target width
+  function animateBars(container) {
+    container.querySelectorAll('.bar[data-w]').forEach(bar => {
+      bar.style.width = bar.dataset.w + '%';
+    });
+  }
+  // Hero bars on page load
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelectorAll('#hero .bar[data-w]').forEach(bar => {
+        bar.style.width = bar.dataset.w + '%';
+      });
+    }, 700);
+  });
+  // Demo bars when section enters view
+  const demoObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        setTimeout(() => animateBars(e.target), 200);
+        demoObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  const demoSection = document.getElementById('demo');
+  if (demoSection) demoObs.observe(demoSection);
+
+  // ===== COUNT-UP =====
+  function countUp(el) {
+    const target = parseInt(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    const dur = 1400;
+    const start = Date.now();
+    function tick() {
+      const t = Math.min((Date.now()-start)/dur, 1);
+      const ease = 1 - Math.pow(1-t, 3);
+      el.textContent = Math.round(target * ease) + suffix;
+      if (t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  const cObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { countUp(e.target); cObs.unobserve(e.target); }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-count]').forEach(el => cObs.observe(el));
+
+  // ===== FORM =====
+  function sendForm(e) {
+    e.preventDefault();
+    const name = document.getElementById('fname').value.trim();
+    const contact = document.getElementById('fcontact').value.trim();
+    if (!name || !contact) {
+      const form = document.querySelector('.contact-form');
+      form.style.animation = 'shake .35s ease';
+      setTimeout(() => form.style.animation = '', 350);
+      return;
+    }
+    document.getElementById('fBody').style.display = 'none';
+    document.getElementById('fSuccess').style.display = 'block';
+  }
+
+  // ===== CUSTOM CURSOR =====
+  const cur = document.getElementById('cur');
+  const curD = document.getElementById('curD');
+  if (cur && window.matchMedia('(pointer:fine)').matches) {
+    let cx=0, cy=0, mx=0, my=0;
+    document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+    (function loop() {
+      cx += (mx-cx) * .12;
+      cy += (my-cy) * .12;
+      cur.style.left = cx+'px'; cur.style.top = cy+'px';
+      curD.style.left = mx+'px'; curD.style.top = my+'px';
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('a,button,summary,.card-item,.step,.test-card').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cur.style.width='36px'; cur.style.height='36px'; cur.style.borderColor='var(--cyan)';
+      });
+      el.addEventListener('mouseleave', () => {
+        cur.style.width='18px'; cur.style.height='18px'; cur.style.borderColor='var(--purple)';
+      });
+    });
+  }
+
+  // ===== NAV SCROLL EFFECT =====
+  window.addEventListener('scroll', () => {
+    document.getElementById('nav').style.background =
+      window.scrollY > 40 ? 'rgba(8,8,23,.97)' : 'rgba(8,8,23,.85)';
+  }, { passive: true });
+
+  // ===== SMOOTH SCROLL =====
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) { e.preventDefault(); window.scrollTo({ top: t.getBoundingClientRect().top + scrollY - 74, behavior: 'smooth' }); }
+    });
+  });
+</script>
+</body>
+</html>
