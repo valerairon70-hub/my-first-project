@@ -210,8 +210,9 @@
 
     /* Tracker card */
     .tracker-card {
-      background: rgba(255,255,255,.04);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.06) inset;
       border-radius: 20px; padding: 26px;
       backdrop-filter: blur(12px);
       box-shadow: 0 24px 60px rgba(0,0,0,.45);
@@ -306,7 +307,8 @@
       max-width: 680px; margin: 0 auto;
       padding: 24px 28px; font-size: 15px; font-style: italic; color: var(--muted);
       line-height: 1.7; text-align: center;
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--r);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.06) inset;
       position: relative;
     }
     .proof-quote::before {
@@ -376,7 +378,7 @@
     =========================== */
     #demo { background: var(--bg-1); }
     .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; max-width: 940px; margin: 0 auto; }
-    .demo-col { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+    .demo-col { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--r); overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.06) inset; }
 
     .dc-head {
       padding: 14px 18px; border-bottom: 1px solid var(--border);
@@ -441,7 +443,8 @@
     #for-whom { background: var(--bg); }
     .cards-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; margin-bottom: 28px; }
     .card-item {
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 26px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--r); padding: 26px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.06) inset;
       transition: border-color .3s, box-shadow .3s, transform .3s;
     }
     .card-item:hover { border-color: rgba(124,58,237,.4); box-shadow: var(--glow); transform: translateY(-4px); }
@@ -504,8 +507,9 @@
     #testimonials { background: var(--bg); }
     .test-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
     .test-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 26px;
-      position: relative; transition: border-color .3s, transform .3s;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--r); padding: 26px;
+      position: relative; box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.06) inset;
+      transition: border-color .3s, box-shadow .3s, transform .3s;
     }
     .test-card:hover { border-color: rgba(124,58,237,.3); transform: translateY(-4px); }
     .test-metric {
@@ -531,8 +535,9 @@
     #faq { background: var(--bg-1); }
     .faq-list { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
     details {
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden;
-      transition: border-color .2s;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--r); overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.06) inset;
+      transition: border-color .2s, box-shadow .2s;
     }
     details[open] { border-color: rgba(124,58,237,.3); }
     summary {
@@ -552,8 +557,9 @@
     #contact { background: var(--bg); }
     .contact-wrap { max-width: 640px; margin: 0 auto; text-align: center; }
     .contact-form {
-      background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
       padding: 36px 40px; margin-top: 36px; text-align: left;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.06) inset;
     }
     .f-field { margin-bottom: 18px; }
     .f-label { display: block; font-size: 12px; font-weight: 700; letter-spacing: .05em; color: var(--muted); margin-bottom: 7px; }
