@@ -479,7 +479,7 @@ NeuroTracker AI — образовательный инструмент
 Контакты:
 Telegram · WhatsApp · [ссылки]
 
-© 2026 Valerijs Sozanov
+© 2026 Valerii Sozanov
 Создано для дистрибьюторов CoralClub
 ```
 
