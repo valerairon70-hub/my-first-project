@@ -340,7 +340,7 @@
       background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 26px;
       transition: border-color .3s, box-shadow .3s, transform .3s;
     }
-    .step:hover { border-color: rgba(124,58,237,.35); box-shadow: 0 8px 32px rgba(124,58,237,.1); transform: translateX(4px); }
+    .step:hover { border-color: rgba(124,58,237,.35); box-shadow: 0 8px 32px rgba(124,58,237,.1); }
     .step-n {
       width: 52px; height: 52px; border-radius: 14px; background: var(--grad);
       display: flex; align-items: center; justify-content: center;
@@ -730,7 +730,7 @@
       transform-style: preserve-3d;
       will-change: transform;
     }
-    .card-item::before, .test-card::before {
+    .card-item::before, .test-card::before, .step::before {
       content: '';
       position: absolute; inset: 0;
       border-radius: inherit;
@@ -739,8 +739,8 @@
       z-index: 0;
       transition: opacity .35s ease;
     }
-    .card-item > *, .test-card > * { position: relative; z-index: 1; }
-    .card-item:hover::before, .test-card:hover::before { opacity: 1; }
+    .card-item > *, .test-card > *, .step > * { position: relative; z-index: 1; }
+    .card-item:hover::before, .test-card:hover::before, .step:hover::before { opacity: 1; }
 
     /* Text readable on gradient */
     .card-item:hover .card-txt,
@@ -1591,7 +1591,7 @@
   }, { passive: true });
 
   // ===== 3D CARD TILT =====
-  document.querySelectorAll('.card-item, .test-card, .tracker-card').forEach(card => {
+  document.querySelectorAll('.card-item, .test-card, .tracker-card, .step').forEach(card => {
     card.addEventListener('mousemove', e => {
       const r = card.getBoundingClientRect();
       const x = e.clientX - r.left, y = e.clientY - r.top;
