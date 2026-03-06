@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Тарифы — NeuroTracker AI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:   #f0a500;
+      --orange: #e85d04;
+      --bright: #ff6b35;
+      --bg:     #0a0a0a;
+      --card:   rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --text:   #e8e8e8;
+      --muted:  rgba(255,255,255,0.45);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Ambient background ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse at 15% 20%, rgba(240,165,0,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 75%, rgba(232,93,4,0.06) 0%, transparent 50%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ════════════════════════
+       NAV
+    ════════════════════════ */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-size: 15px; font-weight: 700; letter-spacing: 0.3px;
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+    }
+
+    .nav-link {
+      font-size: 13px; color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--text); }
+
+    /* ════════════════════════
+       HERO
+    ════════════════════════ */
+    .hero {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 80px 24px 56px;
+    }
+
+    .hero-label {
+      display: inline-block;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: rgba(240,165,0,0.7);
+      border: 1px solid rgba(240,165,0,0.2);
+      border-radius: 20px;
+      padding: 5px 14px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: clamp(32px, 6vw, 52px);
+      font-weight: 800; letter-spacing: -1px; line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, #ffd060, var(--gold), var(--orange));
+      background-size: 200% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradShift 5s linear infinite;
+    }
+
+    @keyframes gradShift {
+      0%   { background-position: 0% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .hero p {
+      font-size: clamp(15px, 2vw, 17px);
+      color: rgba(255,255,255,0.55);
+      max-width: 480px; margin: 0 auto 32px;
+      line-height: 1.65;
+    }
+
+    /* Period toggle */
+    .toggle-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 6px 8px;
+    }
+
+    .toggle-btn {
+      font-size: 13px; font-weight: 500;
+      padding: 7px 18px; border-radius: 30px; border: none;
+      cursor: pointer; transition: background 0.2s, color 0.2s;
+      background: transparent; color: var(--muted);
+    }
+
+    .toggle-btn.active {
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      color: #0a0a0a; font-weight: 700;
+      box-shadow: 0 2px 12px rgba(240,165,0,0.3);
+    }
+
+    .badge-save {
+      font-size: 10px; font-weight: 700;
+      background: rgba(240,165,0,0.15);
+      color: var(--gold);
+      border: 1px solid rgba(240,165,0,0.25);
+      border-radius: 10px;
+      padding: 2px 8px;
+    }
+
+    /* ════════════════════════
+       PRICING GRID
+    ════════════════════════ */
+    .pricing-section {
+      position: relative; z-index: 1;
+      padding: 0 24px 80px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 1020px;
+      margin: 0 auto;
+      align-items: start;
+    }
+
+    /* ── Card base ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 32px 28px 28px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      position: relative;
+      transition: transform 0.25s, box-shadow 0.25s;
+      animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.15s; }
+    .card:nth-child(3) { animation-delay: 0.25s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(32px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    /* ── Pro card highlight ── */
+    .card.featured {
+      border-color: rgba(240,165,0,0.35);
+      background: rgba(240,165,0,0.04);
+      box-shadow:
+        0 0 0 1px rgba(240,165,0,0.1),
+        0 20px 60px rgba(0,0,0,0.4),
+        0 0 50px rgba(240,165,0,0.07);
+    }
+
+    .card.featured:hover {
+      box-shadow:
+        0 0 0 1px rgba(240,165,0,0.2),
+        0 28px 70px rgba(0,0,0,0.5),
+        0 0 60px rgba(240,165,0,0.12);
+    }
+
+    /* Top accent line on featured */
+    .card.featured::before {
+      content: '';
+      position: absolute; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 55%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    /* ── Badge ── */
+    .card-badge {
+      position: absolute; top: -13px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      color: #0a0a0a;
+      padding: 4px 16px; border-radius: 20px;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(240,165,0,0.35);
+    }
+
+    /* ── Card header ── */
+    .card-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      border: 1px solid rgba(240,165,0,0.15);
+      background: rgba(240,165,0,0.06);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .card-icon svg { width: 22px; height: 22px; }
+
+    .card-name {
+      font-size: 20px; font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 13px; color: var(--muted);
+      line-height: 1.55; margin-bottom: 24px;
+    }
+
+    /* ── Price ── */
+    .price-block { margin-bottom: 24px; }
+
+    .price-amount {
+      font-size: 40px; font-weight: 800;
+      letter-spacing: -1.5px; line-height: 1;
+      color: var(--text);
+    }
+
+    .price-amount sup {
+      font-size: 20px; font-weight: 600;
+      vertical-align: super; letter-spacing: 0;
+    }
+
+    .price-amount.free {
+      background: linear-gradient(135deg, #ffd060, var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .price-amount.custom {
+      font-size: 28px; color: var(--muted);
+    }
+
+    .price-period {
+      font-size: 13px; color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .price-annual { display: none; }
+
+    /* ── Divider ── */
+    .card-divider {
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+      margin-bottom: 20px;
+    }
+
+    /* ── Features ── */
+    .features { list-style: none; margin-bottom: 28px; display: flex; flex-direction: column; gap: 10px; }
+
+    .features li {
+      display: flex; gap: 10px;
+      font-size: 13.5px; color: rgba(255,255,255,0.75);
+      line-height: 1.4;
+    }
+
+    .features li.dim { color: rgba(255,255,255,0.3); }
+
+    .feat-icon {
+      flex-shrink: 0; margin-top: 1px;
+      width: 17px; height: 17px;
+      border-radius: 50%;
+    }
+
+    .feat-icon.yes {
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      display: flex; align-items: center; justify-content: center;
+    }
+    .feat-icon.yes svg { width: 9px; height: 9px; }
+
+    .feat-icon.no {
+      background: rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .feat-icon.no svg { width: 9px; height: 9px; }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px 20px;
+      border-radius: 12px; border: none; cursor: pointer;
+      font-size: 14.5px; font-weight: 700;
+      color: #0a0a0a;
+      background: linear-gradient(135deg, #ffd060, var(--gold), var(--orange));
+      background-size: 200% auto;
+      box-shadow: 0 4px 20px rgba(240,165,0,0.3);
+      transition: transform 0.2s, box-shadow 0.2s, background-position 0.4s;
+      text-decoration: none;
+      margin-bottom: 10px;
+      position: relative; overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent 60%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(240,165,0,0.45);
+      background-position: right center;
+    }
+    .btn-primary:hover::before { opacity: 1; }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .btn-secondary {
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      width: 100%; padding: 12px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(240,165,0,0.2);
+      background: transparent; cursor: pointer;
+      font-size: 13.5px; font-weight: 500;
+      color: rgba(240,165,0,0.75);
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(240,165,0,0.5);
+      color: var(--gold);
+      background: rgba(240,165,0,0.05);
+    }
+    .btn-secondary svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    /* ── Free badge on start card ── */
+    .free-note {
+      text-align: center;
+      font-size: 11.5px; color: rgba(255,255,255,0.3);
+      margin-top: 12px;
+    }
+
+    /* ════════════════════════
+       COMPARE HINT
+    ════════════════════════ */
+    .compare-hint {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 0 24px 64px;
+    }
+
+    .compare-hint p {
+      font-size: 13px; color: var(--muted);
+    }
+
+    .compare-hint a {
+      color: var(--gold); text-decoration: none;
+      border-bottom: 1px solid rgba(240,165,0,0.3);
+      transition: border-color 0.2s;
+    }
+    .compare-hint a:hover { border-color: var(--gold); }
+
+    /* ════════════════════════
+       FAQ STRIP
+    ════════════════════════ */
+    .faq {
+      position: relative; z-index: 1;
+      max-width: 680px; margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    .faq-title {
+      font-size: clamp(22px, 4vw, 28px); font-weight: 700;
+      text-align: center; margin-bottom: 32px;
+    }
+
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .faq-q {
+      width: 100%; background: none; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px;
+      padding: 18px 0;
+      font-size: 14.5px; font-weight: 500; color: var(--text);
+      text-align: left;
+      transition: color 0.2s;
+    }
+
+    .faq-q:hover { color: var(--gold); }
+
+    .faq-q .arrow {
+      flex-shrink: 0;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.3s, border-color 0.2s;
+    }
+
+    .faq-q.open .arrow {
+      transform: rotate(45deg);
+      border-color: rgba(240,165,0,0.4);
+    }
+
+    .faq-q .arrow svg { width: 10px; height: 10px; }
+
+    .faq-a {
+      font-size: 13.5px; color: rgba(255,255,255,0.55);
+      line-height: 1.7;
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.3s;
+      padding-bottom: 0;
+    }
+
+    .faq-a.open {
+      max-height: 200px;
+      padding-bottom: 18px;
+    }
+
+    /* ════════════════════════
+       CTA BOTTOM
+    ════════════════════════ */
+    .cta-bottom {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 0 24px 80px;
+    }
+
+    .cta-bottom-inner {
+      max-width: 560px; margin: 0 auto;
+      background: rgba(240,165,0,0.04);
+      border: 1px solid rgba(240,165,0,0.12);
+      border-radius: 24px;
+      padding: 44px 36px;
+      position: relative; overflow: hidden;
+    }
+
+    .cta-bottom-inner::before {
+      content: '';
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 50%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(240,165,0,0.6), transparent);
+    }
+
+    .cta-bottom h2 {
+      font-size: clamp(22px, 4vw, 28px); font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .cta-bottom p {
+      font-size: 14px; color: var(--muted);
+      margin-bottom: 28px; line-height: 1.6;
+    }
+
+    .cta-bottom-btns {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    }
+
+    .cta-big-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: 12px; border: none;
+      cursor: pointer; font-size: 15px; font-weight: 700;
+      text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .cta-big-btn.gold {
+      background: linear-gradient(135deg, #ffd060, var(--gold), var(--orange));
+      color: #0a0a0a;
+      box-shadow: 0 4px 24px rgba(240,165,0,0.35);
+    }
+    .cta-big-btn.gold:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(240,165,0,0.5); }
+
+    .cta-big-btn.ghost {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.65);
+    }
+    .cta-big-btn.ghost:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+    .cta-big-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    /* ════════════════════════
+       FOOTER
+    ════════════════════════ */
+    footer {
+      position: relative; z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 24px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+
+    footer p { font-size: 12px; color: rgba(255,255,255,0.2); }
+
+    footer a {
+      font-size: 12px; color: rgba(255,255,255,0.3);
+      text-decoration: none; transition: color 0.2s;
+    }
+    footer a:hover { color: var(--gold); }
+
+    /* ════════════════════════
+       RESPONSIVE
+    ════════════════════════ */
+    @media (max-width: 860px) {
+      nav { padding: 14px 20px; }
+
+      .pricing-grid {
+        grid-template-columns: 1fr;
+        max-width: 420px;
+      }
+
+      /* Featured card stays on top visually on mobile */
+      .card.featured { order: -1; }
+
+      .cta-bottom-inner { padding: 32px 24px; }
+      footer { padding: 20px 20px; }
+    }
+
+    @media (max-width: 480px) {
+      .hero { padding: 60px 20px 40px; }
+      .pricing-section { padding: 0 16px 60px; }
+      .cta-bottom-btns { flex-direction: column; align-items: stretch; }
+      .cta-big-btn { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="index.html">NeuroTracker AI</a>
+  <a class="nav-link" href="index.html">← На главную</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label">Тарифы</div>
+  <h1>Выбери <span>свой формат</span></h1>
+  <p>Начни бесплатно — пойми ценность. Потом выбери то, что подходит под твой ритм работы.</p>
+
+  <div class="toggle-wrap">
+    <button class="toggle-btn active" id="btn-month" onclick="setPeriod('month')">Месяц</button>
+    <button class="toggle-btn" id="btn-year" onclick="setPeriod('year')">
+      Год <span class="badge-save">−20%</span>
+    </button>
+  </div>
+</section>
+
+<!-- PRICING GRID -->
+<section class="pricing-section">
+  <div class="pricing-grid">
+
+    <!-- ── СТАРТ ── -->
+    <div class="card" id="card-start">
+      <div class="card-icon">
+        <!-- Sprout icon -->
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 21V11M12 11C12 11 8 9 6 5c4 0 7 2.5 6 6zM12 11C12 11 16 9 18 5c-4 0-7 2.5-6 6z" stroke="#f0a500" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 21c0-4-2-7-5-8" stroke="#f0a500" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="card-name">Старт</div>
+      <div class="card-desc">Полный цикл с одним клиентом — расшифровка, текст и все касания во время программы.</div>
+
+      <div class="price-block">
+        <div class="price-amount"><sup>₽</sup>999</div>
+        <div class="price-period">в месяц · до 10 действий</div>
+      </div>
+
+      <div class="card-divider"></div>
+
+      <ul class="features">
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          До 10 действий в месяц
+        </li>
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Готовый текст для WhatsApp/Telegram
+        </li>
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Базовый анализ причинно-следственных связей
+        </li>
+        <li class="dim">
+          <span class="feat-icon no"><svg viewBox="0 0 9 9" fill="none"><path d="M2 2l5 5M7 2L2 7" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+          Скрипт разговора с клиентом
+        </li>
+        <li class="dim">
+          <span class="feat-icon no"><svg viewBox="0 0 9 9" fill="none"><path d="M2 2l5 5M7 2L2 7" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+          Схема касаний во время программы
+        </li>
+        <li class="dim">
+          <span class="feat-icon no"><svg viewBox="0 0 9 9" fill="none"><path d="M2 2l5 5M7 2L2 7" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+          Командный доступ
+        </li>
+      </ul>
+
+      <a class="btn-primary" href="#">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Подключить Старт
+      </a>
+      <a class="btn-secondary" href="https://t.me/valeriisozanov" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M22.265 2.428a1.5 1.5 0 0 0-1.52-.217L2.043 9.77a1.5 1.5 0 0 0 .09 2.793l4.183 1.393 1.874 5.958a1.5 1.5 0 0 0 2.54.548l2.403-2.72 4.626 3.394a1.502 1.502 0 0 0 2.33-.938l2.972-16.02a1.5 1.5 0 0 0-.796-1.75z" fill="currentColor"/></svg>
+        Задать вопрос
+      </a>
+      <p class="free-note">1 действие = расшифровка, текст или касание</p>
+    </div>
+
+    <!-- ── PRO ── -->
+    <div class="card featured" id="card-pro">
+      <div class="card-badge">Популярный</div>
+
+      <div class="card-icon">
+        <!-- Bolt icon -->
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 2L4.5 13.5H11L10 22L19.5 10H13L13 2Z" stroke="#f0a500" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="card-name">Pro</div>
+      <div class="card-desc">Для тех, кто активно работает с Трекером и хочет расшифровывать быстро и уверенно.</div>
+
+      <div class="price-block">
+        <div class="price-amount" id="pro-price-month">
+          <sup>₽</sup>4 999
+        </div>
+        <div class="price-amount" id="pro-price-year" style="display:none">
+          <sup>₽</sup>3 999
+        </div>
+        <div class="price-period price-monthly">в месяц · оплата ежемесячно</div>
+        <div class="price-period price-annual" id="pro-period-year">в месяц · оплата раз в год</div>
+      </div>
+
+      <div class="card-divider"></div>
+
+      <ul class="features">
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <strong>Неограниченные</strong>&nbsp;расшифровки
+        </li>
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Готовый текст для WhatsApp/Telegram
+        </li>
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Полный анализ причинно-следственных связей
+        </li>
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Скрипт разговора с клиентом
+        </li>
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Схема касаний во время программы
+        </li>
+        <li class="dim">
+          <span class="feat-icon no"><svg viewBox="0 0 9 9" fill="none"><path d="M2 2l5 5M7 2L2 7" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+          Командный доступ
+        </li>
+      </ul>
+
+      <a class="btn-primary" href="#">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Подключить Pro
+      </a>
+      <a class="btn-secondary" href="https://t.me/valeriisozanov" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M22.265 2.428a1.5 1.5 0 0 0-1.52-.217L2.043 9.77a1.5 1.5 0 0 0 .09 2.793l4.183 1.393 1.874 5.958a1.5 1.5 0 0 0 2.54.548l2.403-2.72 4.626 3.394a1.502 1.502 0 0 0 2.33-.938l2.972-16.02a1.5 1.5 0 0 0-.796-1.75z" fill="currentColor"/></svg>
+        Задать вопрос
+      </a>
+    </div>
+
+    <!-- ── КОМАНДА ── -->
+    <div class="card" id="card-team">
+      <div class="card-icon">
+        <!-- People icon -->
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="9" cy="7" r="3" stroke="#f0a500" stroke-width="1.8"/>
+          <path d="M3 20c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="#f0a500" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="17" cy="8" r="2.5" stroke="#f0a500" stroke-width="1.6"/>
+          <path d="M21 20c0-2.761-1.791-5-4-5" stroke="#f0a500" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="card-name">Команда</div>
+      <div class="card-desc">Полный функционал для лидеров, которые хотят вооружить инструментом всю свою структуру.</div>
+
+      <div class="price-block">
+        <div class="price-amount"><sup>₽</sup>14 990</div>
+        <div class="price-period">в месяц · до 10 человек · ~₽1 500/чел</div>
+      </div>
+
+      <div class="card-divider"></div>
+
+      <ul class="features">
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Всё из тарифа Pro
+        </li>
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          5–10 аккаунтов под одной подпиской
+        </li>
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Выгода до 30% по сравнению с Pro × N
+        </li>
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Онбординг для каждого участника команды
+        </li>
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Приоритетная поддержка от автора
+        </li>
+        <li>
+          <span class="feat-icon yes"><svg viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#0a0a0a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          Групповой разбор диаграмм (по запросу)
+        </li>
+      </ul>
+
+      <a class="btn-primary" href="https://t.me/valeriisozanov" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M22.265 2.428a1.5 1.5 0 0 0-1.52-.217L2.043 9.77a1.5 1.5 0 0 0 .09 2.793l4.183 1.393 1.874 5.958a1.5 1.5 0 0 0 2.54.548l2.403-2.72 4.626 3.394a1.502 1.502 0 0 0 2.33-.938l2.972-16.02a1.5 1.5 0 0 0-.796-1.75z" fill="#0a0a0a"/></svg>
+        Обсудить в Telegram
+      </a>
+      <a class="btn-secondary" href="#">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Посмотреть демо
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- COMPARE HINT -->
+<div class="compare-hint">
+  <p>Все цены в рублях. Данные клиентов не сохраняются. <a href="https://t.me/valeriisozanov" target="_blank" rel="noopener">Есть вопросы?</a></p>
+</div>
+
+<!-- FAQ -->
+<section class="faq">
+  <h2 class="faq-title">Частые вопросы</h2>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFaq(this)">
+      Нужно ли вводить данные карты для Старта?
+      <span class="arrow"><svg viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </button>
+    <div class="faq-a">Нет. Старт полностью бесплатен и не требует платёжных данных. Просто зайди и попробуй.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFaq(this)">
+      Что будет после 3 бесплатных расшифровок?
+      <span class="arrow"><svg viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </button>
+    <div class="faq-a">Ничего автоматически не произойдёт — инструмент просто остановится. Ты сам решаешь, переходить на Pro или нет. Никаких скрытых списаний.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFaq(this)">
+      Куда уходят данные диаграммы моего клиента?
+      <span class="arrow"><svg viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </button>
+    <div class="faq-a">Никуда. Данные обрабатываются в момент запроса и не сохраняются. Ни ты, ни твой клиент не идентифицируетесь в системе.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFaq(this)">
+      Можно ли отменить подписку в любой момент?
+      <span class="arrow"><svg viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </button>
+    <div class="faq-a">Да. Без объяснений и без штрафов. Напиши в Telegram — разберёмся в течение дня.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFaq(this)">
+      Тариф «Команда» — как это работает на практике?
+      <span class="arrow"><svg viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </button>
+    <div class="faq-a">Лидер оплачивает подписку на 5–10 человек и получает отдельные доступы для каждого участника команды. Каждый работает самостоятельно, лидер видит общую картину. Условия обсуждаем индивидуально — пиши в Telegram.</div>
+  </div>
+</section>
+
+<!-- CTA BOTTOM -->
+<section class="cta-bottom">
+  <div class="cta-bottom-inner">
+    <h2>Ещё не решил?</h2>
+    <p>Напиши — покажу как это работает на реальной диаграмме. Без давления и обязательств.</p>
+    <div class="cta-bottom-btns">
+      <a class="cta-big-btn gold" href="#">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Попробовать бесплатно
+      </a>
+      <a class="cta-big-btn ghost" href="https://t.me/valeriisozanov" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M22.265 2.428a1.5 1.5 0 0 0-1.52-.217L2.043 9.77a1.5 1.5 0 0 0 .09 2.793l4.183 1.393 1.874 5.958a1.5 1.5 0 0 0 2.54.548l2.403-2.72 4.626 3.394a1.502 1.502 0 0 0 2.33-.938l2.972-16.02a1.5 1.5 0 0 0-.796-1.75z" fill="currentColor"/></svg>
+        Написать автору
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 NeuroTracker AI · Валерий Созанов</p>
+  <div style="display:flex;gap:20px;align-items:center;">
+    <a href="index.html">Главная</a>
+    <a href="https://t.me/valeriisozanov" target="_blank" rel="noopener">Telegram</a>
+  </div>
+</footer>
+
+<script>
+  /* ── Period toggle ── */
+  function setPeriod(p) {
+    const isYear = p === 'year';
+    document.getElementById('btn-month').classList.toggle('active', !isYear);
+    document.getElementById('btn-year').classList.toggle('active', isYear);
+
+    // Pro price swap
+    document.getElementById('pro-price-month').style.display = isYear ? 'none' : 'block';
+    document.getElementById('pro-price-year').style.display  = isYear ? 'block' : 'none';
+    document.querySelectorAll('.price-monthly').forEach(el => el.style.display = isYear ? 'none' : 'block');
+    document.querySelectorAll('.price-annual').forEach(el  => el.style.display = isYear ? 'block' : 'none');
+  }
+
+  /* ── FAQ accordion ── */
+  function toggleFaq(btn) {
+    const answer = btn.nextElementSibling;
+    const isOpen = btn.classList.contains('open');
+
+    // Close all
+    document.querySelectorAll('.faq-q').forEach(b => {
+      b.classList.remove('open');
+      b.nextElementSibling.classList.remove('open');
+    });
+
+    // Open clicked if it was closed
+    if (!isOpen) {
+      btn.classList.add('open');
+      answer.classList.add('open');
+    }
+  }
+</script>
+</body>
+</html>
